@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+{#    <meta charset="UTF-8">#}
+    <meta content="text/html; charset=UTF-8; X-Content-Type-Options=nosniff" http-equiv="Content-Type" />
+    <title>Title</title>
+</head>
+<body>
+{% load static %}
+<script src="{% static 'jquery.js' %}"></script>
+
+
+
+<select name="refresh_time" id="refresh_time">
+    <option value="3">3</option>
+    <option value="5">5</option>
+    <option value="10">10</option>
+    <option value="15">15</option>
+</select>
+{% for link in links %}
+    <div id="link{{ link.pk }}">
+    <input type="checkbox" checked id="checkbox{{ link.pk }}">
+        {{ link.link }}
+    </div>
+{% endfor %}
+
+
+<script>
+        function check_links() {
+            {% for link in links %}
+            if ($('#checkbox{{ link.pk }}').prop('checked') == true) {
+                let link = '{{ link.link }}'
+                $.ajax({
+                    method: 'GET',
+                    url: 'ajax/check_link',
+                    crossDomain: true,
+                    dataType: 'json',
+                    data: {'link': link},
+                    success: function (data) {
+                        if (data['status'] == 200) {
+                            let green = document.getElementById('link{{ link.pk }}');
+                            $(green).css('background-color', 'green');
+                        } else {
+                            let red = document.getElementById('link{{ link.pk }}');
+                            $(red).css('background-color', 'crimson');
+                        }
+                    },
+                });
+            }
+            else {
+               let white = document.getElementById('link{{ link.pk }}');
+               $(white).css('background-color', 'white');
+            }
+        {% endfor %}
+        }
+
+        $(document).ready(function() {
+                let interval = 1;
+                setTimeout(function tick() {
+                check_links();
+                interval = ($("#refresh_time").val() * 1000);
+                setTimeout(tick, interval);
+                 }, interval);
+             })
+    </script>
+
+</body>
+</html>
